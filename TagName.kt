@@ -36,14 +36,9 @@ class TagName(private val name: String, private val surname: String, private val
             val gapBetweenLetters = (name.length + surname.length - 2) + EXTRA_STARS * 2 // for edges and middle space
             starLength = gapBetweenLetters
             val droppedSpaceName = fullName.replace(" ", "")
+
             for (char in droppedSpaceName) {
-                starLength += when(char) {
-                    'I' -> 1
-                    'J' -> 2
-                    'T' -> 3
-                    'W', 'Y' -> 5
-                    else -> 4
-                }
+                starLength += CharParts.valueOf(char.toString()).length
             }
         } else {
             starLength = status.length + EXTRA_STARS
@@ -73,6 +68,11 @@ class TagName(private val name: String, private val surname: String, private val
         return "*$spaceStart$line$spaceEnd*"
     }
 
+    private fun getCharParts(char: Char, indices: Int): String {
+        val charParts = if (char == ' ') CharParts.SPACE else CharParts.valueOf(char.toString())
+        return charParts.parts[indices]
+    }
+
     private fun getSpaceAroundName(line: String, starsLength: Int): Pair<String, String> {
         var spaceStart = ""
         var spaceEnd = ""
@@ -83,10 +83,10 @@ class TagName(private val name: String, private val surname: String, private val
             val middle = (starsLength - line.length) / 2
             if (starsLength % 2 == 0) {
                 repeat(middle - 1) { spaceStart += " " }
-                repeat(middle - 1) { spaceEnd += " " }
+                repeat(middle - 1) { spaceEnd += " " } // to tirando um aqui ----------- (add - 1)
             } else {
                 repeat(middle - 1) { spaceStart += " " }
-                repeat(middle) { spaceEnd += " " }
+                repeat(middle) { spaceEnd += " " }// TO TIRANDO UM AQUI ------------ (reetirei -1)
             }
         }
         return Pair(spaceStart, spaceEnd)
@@ -122,40 +122,5 @@ class TagName(private val name: String, private val surname: String, private val
             repeat(middle) { statusLine += " " }
             "$statusLine*"
         }
-    }
-
-    private fun getCharParts(char: Char, indices: Int): String {
-        val charParts = when (char) {
-            'A' -> listOf("____", "|__|", "|  |")
-            'B' -> listOf("___ ", "|__]", "|__]")
-            'C' -> listOf("____", "|   ", "|___")
-            'D' -> listOf("___ ", "|  \\", "|__/")
-            'E' -> listOf("____", "|___", "|___")
-            'F' -> listOf("____", "|___", "|   ")
-            'G' -> listOf("____", "| __", "|__]")
-            'H' -> listOf("_  _", "|__|", "|  |")
-            'I' -> listOf("_", "|", "|")
-            'J' -> listOf(" _", " |", "_|")
-            'K' -> listOf("_  _", "|_/ ", "| \\_")
-            'L' -> listOf("_   ", "|   ", "|___")
-            'M' -> listOf("_  _", "|\\/|", "|  |")
-            'N' -> listOf("_  _", "|\\ |", "| \\|")
-            'O' -> listOf("____", "|  |", "|__|")
-            'P' -> listOf("___ ", "|__]", "|   ")
-            'Q' -> listOf("____", "|  |", "|_\\|")
-            'R' -> listOf("____", "|__/", "|  \\")
-            'S' -> listOf("____", "[__ ", "___]")
-            'T' -> listOf("___", " | ", " | ")
-            'U' -> listOf("_  _", "|  |", "|__|")
-            'V' -> listOf("_  _", "|  |", " \\/ ")
-            'W' -> listOf("_ _ _", "| | |", "|_|_|")
-            'X' -> listOf("_  _", " \\/ ", "_/\\_")
-            'Y' -> listOf("_   _", " \\_/ ", "  |  ")
-            'Z' -> listOf("___ ", "  / ", " /__")
-            ' ' -> listOf("    ", "    ", "    ")
-            else -> return "Unknown char!"
-        }
-
-        return charParts[indices]
     }
 }
