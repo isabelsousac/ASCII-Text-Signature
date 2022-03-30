@@ -1,17 +1,16 @@
 package signature
 
-private const val EXTRA_SPACE = 1
+import kotlin.math.max
 
-class TagName(private val name: String, private val surname: String, private val status: String) {
+class TagName(name: String, surname: String, private val status: String) {
     private val fullName = "${name.uppercase()} ${surname.uppercase()}"
-    private val fullNameNoSpace = name.uppercase() + surname.uppercase()
     companion object {
-        const val PADDING = 6
+        private const val EXTRA_SPACE = 1
+        private const val PADDING = 6
     }
 
     fun getFramedName(): String {
-        val lineLength = calculateLineLength()
-        val starsLength = calculateStarLength(lineLength)
+        val starsLength = calculateStarLength()
         val transformedName = getTransformedName(starsLength)
         val statusLine = getStatusLine(starsLength)
         val stars = getStars(starsLength)
@@ -19,56 +18,31 @@ class TagName(private val name: String, private val surname: String, private val
         return "$stars\n$transformedName\n$statusLine\n$stars"
     }
 
+    private fun calculateStarLength(): Int =
+        max(calculateLineLength(), status.length) + PADDING
+
     private fun calculateLineLength(): Int {
-        var singleLine = 0
-        for (i in 0 until fullNameNoSpace.lastIndex) {
-            singleLine += CharParts.valueOf(fullNameNoSpace[i].toString()).length
-        }
-        val kerning = fullNameNoSpace.lastIndex // kerning means space between two letters
-        singleLine += kerning + CharParts.valueOf(fullName.last().toString()).length + PADDING // middle padding
-        return singleLine
+        val lineLength = fullName.sumOf { getCharParts(it).length }
+        return lineLength + fullName.length - 1 // fullName.length - 1 means the space -> ex: 10 letters, 9 spaces
     }
 
-    private fun calculateStarLength(lineLength: Int): Int {
-        var starLength: Int
-        if (lineLength >= status.length) {
-            val blankSpaces = (name.length + surname.length - 2) + PADDING * 2 // adding edge and middle padding
-            starLength = blankSpaces
-            for (char in fullNameNoSpace) {
-                starLength += CharParts.valueOf(char.toString()).length // adding number of char spaces occupied
-            }
-        } else {
-            starLength = status.length + PADDING
-        }
-        return starLength
-    }
-
-    private fun getTransformedName(starsLength: Int): String {
-        var builtName = ""
-        builtName += constructLine(0, starsLength) + "\n"
-        builtName += constructLine(1, starsLength) + "\n"
-        builtName += constructLine(2, starsLength)
-
-        return builtName
-    }
+    private fun getTransformedName(starsLength: Int): String =
+        constructLine(0, starsLength) + "\n" +
+        constructLine(1, starsLength) + "\n" +
+        constructLine(2, starsLength)
 
     private fun constructLine(lineIndex: Int, starsLength: Int): String {
-        var line = ""
-        for (i in 0 until fullName.lastIndex) {
-            val charsLine = getCharParts(fullName[i], lineIndex)
-            line += "$charsLine "
-        }
-        val lastChar = getCharParts(fullName.last(), lineIndex) // last char can't have an additional space at the end
-        line += lastChar
+        val line = fullName.map { getCharParts(it).parts[lineIndex] }
+            .joinToString(separator = " ")
+
         val (spaceStart, spaceEnd) = getSpaceAroundName(line, starsLength)
 
         return "*$spaceStart$line$spaceEnd*"
     }
 
-    private fun getCharParts(char: Char, indices: Int): String {
-        val charParts = if (char == ' ') CharParts.SPACE else CharParts.valueOf(char.toString())
-        return charParts.parts[indices]
-    }
+    private fun getCharParts(char: Char): CharParts =
+        if (char == ' ') CharParts.SPACE
+        else CharParts.valueOf(char.toString())
 
     private fun getSpaceAroundName(line: String, starsLength: Int): SpaceAround {
         return if (line.length >= status.length) {
@@ -86,10 +60,6 @@ class TagName(private val name: String, private val surname: String, private val
     private fun getStatusLine(starsLength: Int): String {
         val middle = (starsLength - status.length) / 2
         val isBothEven = status.length % 2 == starsLength % 2
-        return constructStatus(middle, isBothEven)
-    }
-
-    private fun constructStatus(middle: Int, isBothEven: Boolean): String {
         val endSpaceOffset = if (isBothEven) EXTRA_SPACE else 0
         val startSpaces = " ".repeat(middle - EXTRA_SPACE)
         val endSpaces = " ".repeat(middle - endSpaceOffset)
