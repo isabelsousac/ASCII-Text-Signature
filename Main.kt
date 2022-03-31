@@ -1,7 +1,7 @@
 package signature
 
 fun main() {
-    val font = createFont(true)
+    //val font = createFont(true)
     do {
         var isValidName = true
         try {
@@ -14,6 +14,7 @@ fun main() {
 
             println(framedName.getFramedName())
         } catch (e: IndexOutOfBoundsException) {
+            e.printStackTrace()
             println("Insert a name and surname")
             isValidName = false
         }

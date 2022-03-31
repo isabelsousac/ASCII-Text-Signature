@@ -3,7 +3,9 @@ package signature
 import kotlin.math.max
 
 class TagName(name: String, surname: String, private val status: String) {
-    private val fullName = "${name.uppercase()} ${surname.uppercase()}"
+    private val fullName = "$name $surname"
+    private val nameFont = createFont(isNamespace = true)
+    private val statusFont = createFont(isNamespace = false)
     companion object {
         private const val EXTRA_SPACE = 1
         private const val PADDING = 6
@@ -19,30 +21,39 @@ class TagName(name: String, surname: String, private val status: String) {
     }
 
     private fun calculateBorderLength(): Int =
-        max(calculateLineLength(), status.length) + PADDING
+        max(calculateNamespaceLength(), calculateStatusLength()) + PADDING
 
-    private fun calculateLineLength(): Int {
-        val lineLength = fullName.sumOf { getCharParts(it).length }
-        return lineLength + fullName.length - 1 // fullName.length - 1 means the space -> ex: 10 letters, 9 spaces
+    private fun calculateStatusLength(): Int {
+        val lineLength = status.map { statusFont.getGlyph(it)[0] }
+            .joinToString("").length
+
+        return lineLength + status.length - 1 // "status.length - 1" means the space between the letters
     }
 
-    private fun getTransformedName(borderLength: Int): String =
-        constructLine(0, borderLength) + "\n" +
-        constructLine(1, borderLength) + "\n" +
-        constructLine(2, borderLength)
+    private fun calculateNamespaceLength(): Int {
+        val lineLength = fullName.map { nameFont.getGlyph(it)[0] }
+            .joinToString(separator = "").length
 
-    private fun constructLine(lineIndex: Int, borderLength: Int): String {
-        val line = fullName.map { getCharParts(it).parts[lineIndex] }
-            .joinToString(separator = " ")
+        return lineLength + fullName.length - 1 // fullName.length - 1 means the space between the letters
+    }
+
+    private fun getTransformedName(borderLength: Int): String {
+        var transformedName = ""
+
+        for (i in 0 until nameFont.height - 1) {
+            transformedName += constructNameLine(i, borderLength) + "\n"
+        }
+        return transformedName + constructNameLine(nameFont.height - 1, borderLength) // last line
+    }
+
+    private fun constructNameLine(lineIndex: Int, borderLength: Int): String {
+        val line = fullName.map { nameFont.getGlyph(it)[lineIndex] }
+            .joinToString(separator = "")
 
         val (spaceStart, spaceEnd) = getSpaceAroundName(line, borderLength)
 
-        return "*$spaceStart$line$spaceEnd*"
+        return "88$spaceStart$line${spaceEnd}88"
     }
-
-    private fun getCharParts(char: Char): CharParts =
-        if (char == ' ') CharParts.SPACE
-        else CharParts.valueOf(char.toString())
 
     private fun getSpaceAroundName(line: String, borderLength: Int): SpaceAround {
         return if (line.length >= status.length) {
@@ -63,7 +74,7 @@ class TagName(name: String, surname: String, private val status: String) {
         val endSpaceOffset = if (isBothEven) EXTRA_SPACE else 0
         val startSpaces = " ".repeat(middle - EXTRA_SPACE)
         val endSpaces = " ".repeat(middle - endSpaceOffset)
-        return "*$startSpaces$status$endSpaces*"
+        return "88$startSpaces$status${endSpaces}88"
     }
 
     private fun getBorder(borderLength: Int): String = "8".repeat(borderLength)

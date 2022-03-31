@@ -5,12 +5,15 @@ import java.io.File
 data class Font(
     val height: Int,
     val glyphCount: Int,
-    val glyphs: List<Glyph>
+    val glyphs: List<Glyph>,
+    private val spaceLength: Int
 ) {
     fun getGlyph(char: Char): List<String> {
         for (i in 0..glyphCount) {
             if (char == glyphs[i].representedChar) {
                 return glyphs[i].lines
+            } else if (char == ' ') {
+                return List(height) { " ".repeat(spaceLength) }
             }
         }
         throw IllegalStateException()
@@ -24,7 +27,7 @@ data class Glyph(
 )
 
 fun createFont(isNamespace: Boolean): Font {
-    val fontFile = if (isNamespace) "/Users/isabelsousa/IdeaProjects/ASCII Text Signature/ASCII Text Signature/task/src/signature/Fonts/BiggerFont.txt" else "signature/Fonts/SmallerFont.txt"
+    val fontFile = if (isNamespace) "/Users/isabelsousa/IdeaProjects/ASCII Text Signature/ASCII Text Signature/task/src/signature/Fonts/BiggerFont.txt" else "/Users/isabelsousa/IdeaProjects/ASCII Text Signature/ASCII Text Signature/task/src/signature/Fonts/SmallerFont.txt"
 
     val lines = File(fontFile).readLines()
     val infoPart = lines.first()
@@ -36,7 +39,8 @@ fun createFont(isNamespace: Boolean): Font {
         val (char, widthChar) = lines[i].split(" ")
 
         for (j in (i + 1)..i + fontHeight) {
-            charLines += lines[j]
+            val offsetDifference = widthChar.toInt() - lines[j].length
+            charLines += lines[j] + " ".repeat(offsetDifference)
         }
 
         glyphs += Glyph(
@@ -49,6 +53,7 @@ fun createFont(isNamespace: Boolean): Font {
     return Font(
         height = fontHeight,
         glyphCount = glyphCount,
-        glyphs = glyphs
+        glyphs = glyphs,
+        spaceLength = if (isNamespace) 10 else 6
     )
 }
