@@ -13,7 +13,6 @@ fun main() {
 
             println(framedName.getFramedName())
         } catch (e: IndexOutOfBoundsException) {
-            e.printStackTrace()
             println("Insert a name and surname")
             isValidName = false
         }
