@@ -8,11 +8,11 @@ class TagName(name: String, surname: String, private val status: String) {
     private val statusFont = createFont(isNamespace = false)
     companion object {
         private const val EXTRA_SPACE = 1
-        private const val PADDING = 6
+        private const val PADDING = 9
     }
 
     fun getFramedName(): String {
-        val borderLength = calculateBorderLength()
+        val borderLength = calculateBorderLength() // dfg hr     fj j
         val transformedName = getTransformedName(borderLength)
         val statusLine = getTransformedStatus(borderLength)
         val border = getBorder(borderLength)
@@ -26,15 +26,13 @@ class TagName(name: String, surname: String, private val status: String) {
     private fun calculateStatusLength(): Int {
         val lineLength = status.map { statusFont.getGlyph(it)[0] }
             .joinToString("").length
-
-        return lineLength + status.length - 1 // "status.length - 1" means the space between the letters
+        return lineLength - 1// space in the end of the letters
     }
 
     private fun calculateNamespaceLength(): Int {
         val lineLength = fullName.map { nameFont.getGlyph(it)[0] }
             .joinToString(separator = "").length
-
-        return lineLength + fullName.length - 1 // fullName.length - 1 means the space between the letters
+        return lineLength - 1
     }
 
     private fun getTransformedName(borderLength: Int): String {
@@ -55,19 +53,19 @@ class TagName(name: String, surname: String, private val status: String) {
         return "88$spaceStart$line${spaceEnd}88"
     }
 
-    private fun getSpaceAroundName(line: String, borderLength: Int): SpaceAround {
-        return if (line.length >= calculateStatusLength()) {
+ private fun getSpaceAroundName(line: String, borderLength: Int): SpaceAround {
+        val nameLength = calculateNamespaceLength()
+        return if (nameLength >= calculateStatusLength()) {
             SpaceAround("  ", "  ")
         } else {
-            val middle = (borderLength - line.length) / 2
-            val endSpaceOffset = if (borderLength % 2 == 0) 0 else EXTRA_SPACE
+            val middle = (borderLength - 4 - nameLength) / 2
+            val endSpaceOffset = if (borderLength % 2 == nameLength % 2) EXTRA_SPACE else 0
             SpaceAround(
-                start = " ".repeat(middle - EXTRA_SPACE),
-                end = " ".repeat(middle - endSpaceOffset)
+                start = " ".repeat(middle - endSpaceOffset),
+                end = " ".repeat(middle)
             )
         }
     }
-
     private fun getTransformedStatus(borderLength: Int): String {
         var transformedStatus = ""
         for (i in 0 until statusFont.height - 1) {
@@ -92,11 +90,10 @@ class TagName(name: String, surname: String, private val status: String) {
             val isBothEven = borderLength % 2 == statusLine.length % 2
             val endSpaceOffset = if (isBothEven) EXTRA_SPACE else 0
             SpaceAround(
-                start = " ".repeat(middle - EXTRA_SPACE),
-                end = " ".repeat(middle - endSpaceOffset)
+                start = " ".repeat(middle - EXTRA_SPACE - 1),
+                end = " ".repeat(middle - endSpaceOffset - 1)
             )
         }
     }
-
     private fun getBorder(borderLength: Int): String = "8".repeat(borderLength)
 }

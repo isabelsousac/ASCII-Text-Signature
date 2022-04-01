@@ -1,7 +1,6 @@
 package signature
 
 fun main() {
-    //val font = createFont(true)
     do {
         var isValidName = true
         try {

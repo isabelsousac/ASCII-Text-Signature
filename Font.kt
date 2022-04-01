@@ -54,6 +54,6 @@ fun createFont(isNamespace: Boolean): Font {
         height = fontHeight,
         glyphCount = glyphCount,
         glyphs = glyphs,
-        spaceLength = if (isNamespace) 9 else 5
+        spaceLength = if (isNamespace) 10 else 5
     )
 }
